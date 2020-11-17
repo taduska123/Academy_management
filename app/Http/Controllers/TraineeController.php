@@ -64,9 +64,9 @@ class TraineeController extends Controller
      * @param  \App\Trainee  $trainee
      * @return \Illuminate\Http\Response
      */
-    public function edit(Trainee $trainee)
+    public function edit(Trainee $trainees)
     {
-        //
+        return view('trainee.edit', compact('trainees'));
     }
 
     /**
@@ -76,9 +76,11 @@ class TraineeController extends Controller
      * @param  \App\Trainee  $trainee
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Trainee $trainee)
+    public function update(Request $request, Trainee $trainees)
     {
-        //
+        Trainee::update($this->validateTrainee());
+
+        return  redirect('/trainee/' . $trainees->id);
     }
 
     /**
@@ -87,8 +89,9 @@ class TraineeController extends Controller
      * @param  \App\Trainee  $trainee
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Trainee $trainee)
+    public function delete(Trainee $trainees)
     {
-        //
+        $trainees->delete();
+        return redirect('/trainee');
     }
 }

@@ -35,13 +35,15 @@
 
                 <!-- delete the trainee (uses the destroy method DESTROY /trainees/{id} -->
                 <!-- we will add this later since its a little more complicated than the other two buttons -->
+                {{ Form::open(array('url' => 'trainee/' . $value->id, 'class' => 'pull-right')) }}
+                    {{ Form::hidden('_method', 'DELETE') }}
+                    {{ Form::submit('Delete this trainee', array('class' => 'btn btn-warning')) }}
+                {{ Form::close() }}
 
                 <!-- show the trainee (uses the show method found at GET /trainees/{id} -->
                 <a class="btn btn-small btn-success" href="{{ URL::to('trainee/' . $value->id) }}">Show this trainee</a>
-
                 <!-- edit this trainee (uses the edit method found at GET /trainees/{id}/edit -->
                 <a class="btn btn-small btn-info" href="{{ URL::to('trainee/' . $value->id . '/edit') }}">Edit this trainee</a>
-
             </td>
         </tr>
     @endforeach
