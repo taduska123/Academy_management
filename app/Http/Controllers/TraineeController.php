@@ -14,9 +14,7 @@ class TraineeController extends Controller
      */
     public function index()
     {
-        $trainees = Trainee::latest()->get();
-
-        return view('trainee.index', ['trainees' => $trainees]);
+        return response()->json(Trainee::latest()->get(), 200);
     }
 
     /**
@@ -37,14 +35,14 @@ class TraineeController extends Controller
      */
     public function store(Request $request)
     {
-        Trainee::create(request()->validate([
+        $trainees = Trainee::create($request->validate([
             'name' => 'required',
             'last_name' => 'required',
             'email' => 'required',
             'tel' => 'required',
             'position' => 'required'
         ]));
-       return redirect('/trainee');
+       return response()->json($trainees, 201);
     }
 
     /**
@@ -55,7 +53,7 @@ class TraineeController extends Controller
      */
     public function show(Trainee $trainees)
     {
-        return view('trainee.show',['trainees' => $trainees]);
+        return response()->json($trainees, 200);
     }
 
     /**
@@ -78,9 +76,15 @@ class TraineeController extends Controller
      */
     public function update(Request $request, Trainee $trainees)
     {
-        Trainee::update($this->validateTrainee());
-
-        return  redirect('/trainee/' . $trainees->id);
+        $trainees->update($request->all());
+        // validate([
+        //     'name' => 'required',
+        //     'last_name' => 'required',
+        //     'email' => 'required',
+        //     'tel' => 'required',
+        //     'position' => 'required'
+        // ]));
+       return response()->json($trainees, 200);
     }
 
     /**
@@ -89,9 +93,9 @@ class TraineeController extends Controller
      * @param  \App\Trainee  $trainee
      * @return \Illuminate\Http\Response
      */
-    public function delete(Trainee $trainees)
+    public function delete(Request $request, Trainee $trainees)
     {
         $trainees->delete();
-        return redirect('/trainee');
+        return response()->json(null, 204);
     }
 }

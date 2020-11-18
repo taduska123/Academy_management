@@ -16,10 +16,3 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 });
-Route::get('/trainee', 'TraineeController@index');
-Route::get('/trainee/create', 'TraineeController@create');
-Route::post('/trainee', 'TraineeController@store');
-Route::get('/trainee/{trainees}', 'TraineeController@show');
-Route::get('/trainee/{trainees}/edit}', 'TraineeController@edit');
-Route::put('/trainee/{trainees}', 'TraineeController@update');
-Route::delete('/trainee/{trainees}', 'TraineeController@delete');
