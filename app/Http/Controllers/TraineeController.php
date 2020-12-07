@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Trainee;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class TraineeController extends Controller
 {
@@ -17,15 +18,7 @@ class TraineeController extends Controller
         return response()->json(Trainee::latest()->get(), 200);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        return view('trainee.create');
-    }
+    
 
     /**
      * Store a newly created resource in storage.
@@ -35,14 +28,29 @@ class TraineeController extends Controller
      */
     public function store(Request $request)
     {
-        $trainees = Trainee::create($request->validate([
-            'name' => 'required',
-            'last_name' => 'required',
-            'email' => 'required',
+        $validator = Validator::make($request->all([
+            'name' => 'required|max:199',
+            'last_name' => 'required|max:199',
+            'email' => 'required|email:rfc,dns',
             'tel' => 'required',
             'position' => 'required'
         ]));
-       return response()->json($trainees, 201);
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 422);
+        }
+        else {
+            
+            // $trainee = new Trainee;
+            // $trainee->name = $request->name;
+            // $trainee->last_name = $request->last_name;
+            // $trainee->email = $request->email;
+            // $trainee->tel = $request->tel;
+            // $trainee->position = $request->position;
+            // $trainee->save();
+            $trainee = Trainee::create($request->all());
+            return response()->json($trainee, 201);
+            
+        }
     }
 
     /**
@@ -51,20 +59,9 @@ class TraineeController extends Controller
      * @param  \App\Trainee  $trainee
      * @return \Illuminate\Http\Response
      */
-    public function show(Trainee $trainees)
+    public function show(Trainee $trainee)
     {
-        return response()->json($trainees, 200);
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Trainee  $trainee
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Trainee $trainees)
-    {
-        return view('trainee.edit', compact('trainees'));
+        return response()->json($trainee, 200);
     }
 
     /**
@@ -74,17 +71,24 @@ class TraineeController extends Controller
      * @param  \App\Trainee  $trainee
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Trainee $trainees)
+    public function update(Request $request, Trainee $trainee)
     {
-        $trainees->update($request->all());
-        // validate([
-        //     'name' => 'required',
-        //     'last_name' => 'required',
-        //     'email' => 'required',
-        //     'tel' => 'required',
-        //     'position' => 'required'
-        // ]));
-       return response()->json($trainees, 200);
+        $validator = Validator::make($request->all([
+            'name' => 'required',
+            'last_name' => 'required',
+            'email' => 'required|email:rfc,dns',
+            'tel' => 'required',
+            'position' => 'required'
+        ]));
+        if ($validator->fails()) {
+            return response()->json(422)
+                        ->withErrors($validator)
+                        ->withInput();
+        }
+        else {
+        $trainee->update($request->all());
+        return response()->json($trainee, 200);
+        }
     }
 
     /**
@@ -93,9 +97,9 @@ class TraineeController extends Controller
      * @param  \App\Trainee  $trainee
      * @return \Illuminate\Http\Response
      */
-    public function delete(Request $request, Trainee $trainees)
+    public function delete(Request $request, Trainee $trainee)
     {
-        $trainees->delete();
+        $trainee->delete();
         return response()->json(null, 204);
     }
 }

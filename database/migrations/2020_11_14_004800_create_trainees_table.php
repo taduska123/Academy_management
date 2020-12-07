@@ -15,12 +15,20 @@ class CreateTraineesTable extends Migration
     {
         Schema::create('trainees', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('user_id');
             $table->string('name');
             $table->string('last_name');
             $table->string('email');
             $table->string('tel');
             $table->string('position');
+            $table->date('sutartis_nuo')->nullable();
+            $table->date('sutartis_iki')->nullable();
             $table->timestamps();
+
+            $table->foreign('user_id')
+                ->references('id')
+                ->on('users')
+                ->onDelete('cascade');
         });
     }
 

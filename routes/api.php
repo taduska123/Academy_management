@@ -17,11 +17,14 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
-
-Route::get('trainee', 'TraineeController@index');
-//Route::get('trainee/create', 'TraineeController@create');
-Route::post('trainee', 'TraineeController@store');
-Route::get('trainee/{trainees}', 'TraineeController@show');
-//Route::get('trainee/{trainees}/edit}', 'TraineeController@edit');
-Route::put('trainee/{trainees}', 'TraineeController@update');
-Route::delete('trainee/{trainees}', 'TraineeController@delete');
+Route::post('login', 'LoginController@authenticate');
+Route::get('trainee', 'TraineeController@index')->middleware('AuthKey');
+Route::post('trainee', 'TraineeController@store')->middleware('AuthKey');
+Route::get('trainee/{trainee}', 'TraineeController@show')->middleware('AuthKey');
+Route::put('trainee/{trainee}', 'TraineeController@update')->middleware('AuthKey');
+Route::delete('trainee/{trainee}', 'TraineeController@delete')->middleware('AuthKey');
+// Route::get('trainee', 'TraineeController@index');
+// Route::post('trainee', 'TraineeController@store');
+// Route::get('trainee/{trainee}', 'TraineeController@show');
+// Route::put('trainee/{trainee}', 'TraineeController@update');
+// Route::delete('trainee/{trainee}', 'TraineeController@delete');
