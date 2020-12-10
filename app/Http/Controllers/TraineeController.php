@@ -3,8 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Trainee;
+use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Lcobucci\JWT\Parser;
+
 
 class TraineeController extends Controller
 {
@@ -15,7 +18,17 @@ class TraineeController extends Controller
      */
     public function index()
     {
-        return response()->json(Trainee::latest()->get(), 200);
+    
+        
+         $token = (new Parser())->parse(request()->header('Authorization'));
+         $user = $token->getClaims('uid');
+        //echo $token->getClaim('uid');
+        //dd($user);
+        
+
+       // return response()->json(User::find($user)->trainees()->get(), 200);
+        return response()->json(User::find(request('uid'))->latest()->trainees()->get(), 200);
+        //return response()->json(Trainee::latest()->get(), 200);
     }
 
     
@@ -29,11 +42,14 @@ class TraineeController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all([
+            'user_id' => 'required',
             'name' => 'required|max:199',
             'last_name' => 'required|max:199',
             'email' => 'required|email:rfc,dns',
             'tel' => 'required',
-            'position' => 'required'
+            'position' => 'required',
+            'contract_start' => '',
+            'contract_end' =>''
         ]));
         if ($validator->fails()) {
             return response()->json($validator->errors(), 422);
@@ -73,7 +89,9 @@ class TraineeController extends Controller
      */
     public function update(Request $request, Trainee $trainee)
     {
+        
         $validator = Validator::make($request->all([
+            'user_id' => 'required',
             'name' => 'required',
             'last_name' => 'required',
             'email' => 'required|email:rfc,dns',

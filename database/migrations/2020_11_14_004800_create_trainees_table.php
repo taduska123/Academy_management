@@ -21,8 +21,8 @@ class CreateTraineesTable extends Migration
             $table->string('email');
             $table->string('tel');
             $table->string('position');
-            $table->date('sutartis_nuo')->nullable();
-            $table->date('sutartis_iki')->nullable();
+            $table->date('contract_start')->nullable();
+            $table->date('contract_end')->nullable();
             $table->timestamps();
 
             $table->foreign('user_id')

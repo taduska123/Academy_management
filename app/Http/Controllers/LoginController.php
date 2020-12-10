@@ -17,9 +17,16 @@ class LoginController extends Controller
 
         $email = $request->email;
         $password = $request->password;
+        $user = User::where('email', '=', $email)->first();
+        if (!$user) {
+            return response()->json(["message" => 'Wrong email!'], 401);
+         }
         //dd($email,$password);
         //$now = new DateTimeImmutable();
-        if (User::where('email', '=', $email)->exists() && User::where('password', '=', $password)->exists()){
+        //if (User::where('email', '=', $email)->exists() && User::where('password', '=', $password)->exists()){
+        //if (Auth::attempt(array('email' => $email, 'password' => $password))){
+        //if (!Hash::check(Input::get('password'), $user->password)) {    
+            if ($password == $user->password) {
         //$config = Configuration::forSymmetricSigner(new Sha256(), InMemory::plainText('testing'));
         //$config = Configuration::forUnsecuredSigner();
         $signer = new Sha256();
@@ -29,7 +36,7 @@ class LoginController extends Controller
                         ->setIssuedAt(time()) // Configures the time that the token was issued (iat claim)
                         ->setNotBefore(time()) // Configures the time that the token can be used (nbf claim)
                         ->setExpiration(time() + 13600) // Configures the expiration time of the token (exp claim)
-                        ->set('uid', 1) // Configures a new claim, called "uid"
+                        ->set('uid', $user->id) // Configures a new claim, called "uid"
                         ->sign($signer, 'testing') // creates a signature using "testing" as key
                         ->getToken(); // Retrieves the generated token
 
@@ -41,6 +48,6 @@ class LoginController extends Controller
    
             return response()->json((string)$token, 201);
          }
-         else return response()->json(["message" => 'Wrong email or password!'], 401);
+         else return response()->json(["message" => 'Wrong password!'], 401);
      }
 }

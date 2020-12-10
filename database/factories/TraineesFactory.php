@@ -14,7 +14,7 @@ $factory->define(Trainee::class, function (Faker $faker) {
         'email' => $faker->unique()->safeEmail,
         'tel' => $faker->phoneNumber,
         'position' => $faker->jobTitle,
-        'sutartis_nuo' => $faker->date(),
-        'sutartis_iki' => $faker->date()
+        'contract_start' => $faker->date(),
+        'contract_end' => $faker->date()
     ];
 });

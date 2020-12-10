@@ -6,6 +6,8 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
+use Illuminate\Http\Request;
+
 use Lcobucci\JWT\Configuration;
 use PhpParser\Node\Expr\FuncCall;
 
@@ -49,4 +51,5 @@ class User extends Authenticatable
     {
         return $this->hasMany(Time::class);
     }
+    
 }
