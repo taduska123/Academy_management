@@ -20,14 +20,14 @@ class TraineeController extends Controller
     {
     
         
-         $token = (new Parser())->parse(request()->header('Authorization'));
-         $user = $token->getClaims('uid');
+        //$token = (new Parser())->parse(request()->header('Authorization'));
+        //$user = $token->getClaims('uid');
         //echo $token->getClaim('uid');
         //dd($user);
         
-
+        //dd(request('user_id'));
        // return response()->json(User::find($user)->trainees()->get(), 200);
-        return response()->json(User::find(request('user_id'))->latest()->trainees()->get(), 200);
+        return response()->json(User::find(request('user_id'))->trainees()->get(), 200);
         //return response()->json(Trainee::latest()->get(), 200);
     }
 

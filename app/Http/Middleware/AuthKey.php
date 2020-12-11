@@ -57,7 +57,7 @@ class AuthKey
         //echo(time());
        //dd($token, $data);
         if (!$token->validate($data)) {
-            return response()->json(['message' => 'App data not found'], 401);
+            return response()->json(['message' => 'App data not found, wrong token'], 401);
         }
         if (!$token->verify($signer, 'testing')) {
             return response()->json(['message' => 'Unauthorized sign'], 401);
