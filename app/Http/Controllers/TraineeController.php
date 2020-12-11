@@ -27,7 +27,7 @@ class TraineeController extends Controller
         
 
        // return response()->json(User::find($user)->trainees()->get(), 200);
-        return response()->json(User::find(request('uid'))->latest()->trainees()->get(), 200);
+        return response()->json(User::find(request('user_id'))->latest()->trainees()->get(), 200);
         //return response()->json(Trainee::latest()->get(), 200);
     }
 
