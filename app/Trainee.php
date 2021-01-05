@@ -21,6 +21,13 @@ class Trainee extends Model
     {
         return $this->belongsTo(User::class);
     }
-    
+    public function times()
+    {
+        return $this->hasMany(Time::class);
+    }
+    public function contract()
+    {
+       return $this->select('contract_start','contract_end');
+    }
 }
 

@@ -46,7 +46,7 @@ class LoginController extends Controller
         $token->getClaims(); // Retrieves the token claims
         //echo $token;
    
-            return response()->json([(string)$token, $user], 201);
+            return response()->json((string)$token, 201);
          }
          else return response()->json(["message" => 'Wrong password!'], 401);
      }

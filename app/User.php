@@ -47,9 +47,6 @@ class User extends Authenticatable
         return $this->hasMany(Trainee::class);
     }
 
-    public function times()
-    {
-        return $this->hasMany(Time::class);
-    }
+    
     
 }

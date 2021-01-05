@@ -7,6 +7,7 @@ use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Lcobucci\JWT\Parser;
+use App\Http\Controllers\Controller;
 
 
 class TraineeController extends Controller
@@ -20,14 +21,14 @@ class TraineeController extends Controller
     {
     
         
-        //$token = (new Parser())->parse(request()->header('Authorization'));
-        //$user = $token->getClaims('uid');
+        $token = (new Parser())->parse(request()->header('Authorization'));
+        $userId = $token->getClaim('uid');
         //echo $token->getClaim('uid');
         //dd($user);
         
         //dd(request('user_id'));
-       // return response()->json(User::find($user)->trainees()->get(), 200);
-        return response()->json(User::find(request('user_id'))->trainees()->get(), 200);
+        return response()->json(User::find($userId)->trainees()->get(), 200);
+        //return response()->json(User::find(request('user_id'))->trainees()->get(), 200);
         //return response()->json(Trainee::latest()->get(), 200);
     }
 
@@ -41,32 +42,39 @@ class TraineeController extends Controller
      */
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all([
-            'user_id' => 'required',
+        $token = (new Parser())->parse(request()->header('Authorization'));
+        $userId = $token->getClaim('uid');
+        
+        // $validator = Validator::make($request->all([
+        //     'name' => 'required|max:199',
+        //     'last_name' => 'required|max:199',
+        //     'email' => 'required|email:rfc,dns',
+        //     'tel' => 'required',
+        //     'position' => 'required'
+        // ]));
+       
+        // if ($validator->fails()) {
+        //     return response()->json($validator->errors(), 422);
+        // }
+        $validatedData = $request->validate([
             'name' => 'required|max:199',
             'last_name' => 'required|max:199',
             'email' => 'required|email:rfc,dns',
             'tel' => 'required',
-            'position' => 'required',
-            'contract_start' => '',
-            'contract_end' =>''
-        ]));
-        if ($validator->fails()) {
-            return response()->json($validator->errors(), 422);
-        }
-        else {
-            
-            // $trainee = new Trainee;
-            // $trainee->name = $request->name;
-            // $trainee->last_name = $request->last_name;
-            // $trainee->email = $request->email;
-            // $trainee->tel = $request->tel;
-            // $trainee->position = $request->position;
-            // $trainee->save();
-            $trainee = Trainee::create($request->all());
+            'position' => 'required'
+        ]);
+        
+            $trainee = new Trainee;
+            $trainee->user_id = $userId;
+            $trainee->name = $request->name;
+            $trainee->last_name = $request->last_name;
+            $trainee->email = $request->email;
+            $trainee->tel = $request->tel;
+            $trainee->position = $request->position;
+            $trainee->save();
             return response()->json($trainee, 201);
             
-        }
+       // }
     }
 
     /**
@@ -87,16 +95,17 @@ class TraineeController extends Controller
      * @param  \App\Trainee  $trainee
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Trainee $trainee)
+    public function update(Request $request, Trainee $trainee, $id)
     {
-        
+        $token = (new Parser())->parse(request()->header('Authorization'));
+        $userId = $token->getClaim('uid');
         $validator = Validator::make($request->all([
-            'user_id' => 'required',
             'name' => 'required',
             'last_name' => 'required',
             'email' => 'required|email:rfc,dns',
             'tel' => 'required',
             'position' => 'required'
+            
         ]));
         if ($validator->fails()) {
             return response()->json(422)
@@ -104,11 +113,12 @@ class TraineeController extends Controller
                         ->withInput();
         }
         else {
+            $trainee = Trainee::find($id);
         $trainee->update($request->all());
         return response()->json($trainee, 200);
         }
     }
-
+    
     /**
      * Remove the specified resource from storage.
      *
