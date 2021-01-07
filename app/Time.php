@@ -18,4 +18,5 @@ class Time extends Model
     {
         return $this->belongsTo(Trainee::class);
     }
+    
 }

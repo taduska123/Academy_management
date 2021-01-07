@@ -18,20 +18,49 @@ class TimeController extends Controller
      */
     public function index($id)
     {
-    
+
         $response = Trainee::findorFail($id)->get();
 
-        
+
         //echo $token->getClaim('uid');
         //dd($user);
-        
+
         //dd(request('user_id'));
-        return response()->json(Trainee::findorFail($id)->contract()->times()->get(), 200);
+        return response()->json(Trainee::findorFail($id)->times()->get(), 200);
         //return response()->json(User::find(request('user_id'))->trainees()->get(), 200);
         //return response()->json(Trainee::latest()->get(), 200);
     }
+    public function bymonth($trainee_id, Request $request)
+    {
+        $days = Trainee::findorFail($trainee_id)
+            ->times()
+            ->select(Time::raw("DATE_FORMAT(intership_day,'%d') as days"), 'intership_day', 'time_from', 'time_to', 'type_of_day')
+            ->whereYear('intership_day', $request->year)
+            ->whereMonth('intership_day', $request->month)
+            ->orderBy('intership_day', 'asc')
+            ->get();
+        $dayforfilter = null;
+        foreach ($days as $day) {
+            if ($dayforfilter != $day->days) {
+                $timesarray = null;
+                foreach ($days as $time) {
+                    if ($time->days == $day->days) {
+                        $timesarray[] = [
+                            'time_from' => $time->time_from,
+                            'time_to' => $time->time_to,
+                            'type_of_day' => $time->type_of_day
+                        ];
+                        $dayforfilter = $day->days;
+                    }
+                }
+                $daysarray[] = [
+                    'days' => ['day' => $day->days, 'times' => [$timesarray]]
+                ];
+            }
+        }
 
-    
+        return response()->json($daysarray, 200);
+    }
 
     /**
      * Store a newly created resource in storage.
@@ -52,8 +81,7 @@ class TimeController extends Controller
         ]));
         if ($validator->fails()) {
             return response()->json($validator->errors(), 422);
-        }
-        else {
+        } else {
             $time = new Time;
             $time->trainee_id = $request->trainee_id;
             $time->intership_day = $request->intership_day;
@@ -67,7 +95,6 @@ class TimeController extends Controller
             $trainee->save();
             //$time = Time::create($request->all());
             return response()->json($time, 201);
-            
         }
     }
     /**
@@ -79,7 +106,7 @@ class TimeController extends Controller
      */
     public function update(Request $request, Time $time, $id)
     {
-        
+
         $validator = Validator::make($request->all([
             'contract_start' => 'required',
             'contract_end' => 'required',
@@ -88,14 +115,13 @@ class TimeController extends Controller
             'type_of_day' => 'required',
             'time_to' => 'required|date_format:H:i',
             'time_from' => 'required|date_format:H:i'
-            
+
         ]));
         if ($validator->fails()) {
             return response()->json(422)
-                        ->withErrors($validator)
-                        ->withInput();
-        }
-        else {
+                ->withErrors($validator)
+                ->withInput();
+        } else {
             $time = Time::fideorFail($request->$id);
             $time->trainee_id = $request->trainee_id;
             $time->intership_day = $request->intership_day;
@@ -107,11 +133,11 @@ class TimeController extends Controller
             $trainee->contract_start = $request->contract_start;
             $trainee->contract_end = $request->contract_end;
             $trainee->save();
-        $trainee->update($request->all());
-        return response()->json($trainee, 200);
+            $trainee->update($request->all());
+            return response()->json($trainee, 200);
         }
     }
-    
+
     /**
      * Remove the specified resource from storage.
      *

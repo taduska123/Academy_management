@@ -2,16 +2,16 @@
 
 /** @var \Illuminate\Database\Eloquent\Factory $factory */
 
-use App\Times;
+use App\Time;
 use App\Trainee;
 use Faker\Generator as Faker;
 
-$factory->define(Times::class, function (Faker $faker) {
+$factory->define(Time::class, function (Faker $faker) {
     return [
         'trainee_id' => factory(Trainee::class),
-        'intership_day' => $faker->date(),
+        'intership_day' => '2021-01-09',
         'type_of_day' => $faker->name(),
-        'time_to' => $faker->dateTimeInInterval($startDate = 'now', $interval = '+ 3 months', $timezone = null),
-        'time_from' => $faker->dateTimeInInterval($startDate = '+ 3 months', $interval = '+ 3 months', $timezone = null)
+        'time_to' => $faker->time($format = 'H:i'),
+        'time_from' => $faker->time($format = 'H:i')
     ];
 });

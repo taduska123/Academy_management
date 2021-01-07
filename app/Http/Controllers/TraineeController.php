@@ -45,24 +45,14 @@ class TraineeController extends Controller
         $token = (new Parser())->parse(request()->header('Authorization'));
         $userId = $token->getClaim('uid');
         
-        // $validator = Validator::make($request->all([
-        //     'name' => 'required|max:199',
-        //     'last_name' => 'required|max:199',
-        //     'email' => 'required|email:rfc,dns',
-        //     'tel' => 'required',
-        //     'position' => 'required'
-        // ]));
-       
-        // if ($validator->fails()) {
-        //     return response()->json($validator->errors(), 422);
-        // }
-        $validatedData = $request->validate([
+        
+        $request->validate([
             'name' => 'required|max:199',
             'last_name' => 'required|max:199',
-            'email' => 'required|email:rfc,dns',
+            'email' => 'required|email',
             'tel' => 'required',
             'position' => 'required'
-        ]);
+            ]);
         
             $trainee = new Trainee;
             $trainee->user_id = $userId;
@@ -74,7 +64,7 @@ class TraineeController extends Controller
             $trainee->save();
             return response()->json($trainee, 201);
             
-       // }
+       
     }
 
     /**
@@ -95,28 +85,21 @@ class TraineeController extends Controller
      * @param  \App\Trainee  $trainee
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Trainee $trainee, $id)
+    public function update(Request $request, Trainee $trainee, $trainee_id)
     {
         $token = (new Parser())->parse(request()->header('Authorization'));
         $userId = $token->getClaim('uid');
-        $validator = Validator::make($request->all([
-            'name' => 'required',
-            'last_name' => 'required',
-            'email' => 'required|email:rfc,dns',
+        $request->validate([
+            'name' => 'required|max:199',
+            'last_name' => 'required|max:199',
+            'email' => 'required|email',
             'tel' => 'required',
             'position' => 'required'
-            
-        ]));
-        if ($validator->fails()) {
-            return response()->json(422)
-                        ->withErrors($validator)
-                        ->withInput();
-        }
-        else {
-            $trainee = Trainee::find($id);
+            ]);
+            $trainee = Trainee::find($trainee_id);
         $trainee->update($request->all());
         return response()->json($trainee, 200);
-        }
+        
     }
     
     /**
