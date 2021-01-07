@@ -17,7 +17,7 @@ class CreateTimesTable extends Migration
             $table->id();
             $table->unsignedBigInteger('trainee_id');
             $table->date('intership_day');
-            $table->string('type_of_day');
+            $table->string('type_of_time');
             $table->time('time_to', 0);
             $table->time('time_from');//->nullable(); //nullable nes kitaip neleidzia migrate
            //$table->timestamp('laikas_iki', 1);//->nullable();

@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Trainee;
 use App\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
 use Lcobucci\JWT\Parser;
 use App\Http\Controllers\Controller;
 
@@ -19,20 +18,10 @@ class TraineeController extends Controller
      */
     public function index()
     {
-    
-        
         $token = (new Parser())->parse(request()->header('Authorization'));
         $userId = $token->getClaim('uid');
-        //echo $token->getClaim('uid');
-        //dd($user);
-        
-        //dd(request('user_id'));
         return response()->json(User::find($userId)->trainees()->get(), 200);
-        //return response()->json(User::find(request('user_id'))->trainees()->get(), 200);
-        //return response()->json(Trainee::latest()->get(), 200);
     }
-
-    
 
     /**
      * Store a newly created resource in storage.
@@ -44,7 +33,6 @@ class TraineeController extends Controller
     {
         $token = (new Parser())->parse(request()->header('Authorization'));
         $userId = $token->getClaim('uid');
-        
         
         $request->validate([
             'name' => 'required|max:199',
@@ -63,8 +51,6 @@ class TraineeController extends Controller
             $trainee->position = $request->position;
             $trainee->save();
             return response()->json($trainee, 201);
-            
-       
     }
 
     /**
@@ -73,9 +59,9 @@ class TraineeController extends Controller
      * @param  \App\Trainee  $trainee
      * @return \Illuminate\Http\Response
      */
-    public function show(Trainee $trainee)
+    public function show($trainee_id)
     {
-        return response()->json($trainee, 200);
+        return response()->json(Trainee::find($trainee_id), 200);
     }
 
     /**
@@ -85,10 +71,8 @@ class TraineeController extends Controller
      * @param  \App\Trainee  $trainee
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Trainee $trainee, $trainee_id)
+    public function update(Request $request, $trainee_id)
     {
-        $token = (new Parser())->parse(request()->header('Authorization'));
-        $userId = $token->getClaim('uid');
         $request->validate([
             'name' => 'required|max:199',
             'last_name' => 'required|max:199',
@@ -108,9 +92,9 @@ class TraineeController extends Controller
      * @param  \App\Trainee  $trainee
      * @return \Illuminate\Http\Response
      */
-    public function delete(Request $request, Trainee $trainee)
+    public function delete($trainee_id)
     {
-        $trainee->delete();
+        Trainee::find($trainee_id)->delete();
         return response()->json(null, 204);
     }
 }

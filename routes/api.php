@@ -27,9 +27,9 @@ Route::middleware(['AuthKey'])->group(function () {
     Route::put('trainee/{trainee_id}', 'TraineeController@update');
     Route::delete('trainee/{trainee_id}', 'TraineeController@delete');
     Route::get('trainee/{trainee_id}/time', 'TimeController@bymonth');
-    Route::post('time', 'TimeController@store');
-    Route::put('time/{id}', 'TimeController@update');
-    Route::delete('time/{id}', 'TimeController@delete');
+    Route::post('trainee/{trainee_id}/time', 'TimeController@store');
+    Route::put('trainee/{trainee_id}/time/{time_id}', 'TimeController@update');
+    Route::delete('trainee/{trainee_id}/time/{time_id}', 'TimeController@delete');
 });
 // Route::post('login', 'LoginController@authenticate');
 // Route::get('trainee', 'TraineeController@index')->middleware('AuthKey');
