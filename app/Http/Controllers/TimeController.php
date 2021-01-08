@@ -42,11 +42,14 @@ class TimeController extends Controller
                     }
                 }
                 $daysarray[] = [
-                    'days' => ['day' => $day->days, 'times' => [$timesarray]]
+                    'day' => $day->days, 'times' => [$timesarray]
                 ];
             }
         }
-        return response()->json($daysarray, 200);
+        $result = [
+            'months' => [$request->month => ['days' => $daysarray]]
+        ];
+        return response()->json($result, 200);
     }
 
     /**
