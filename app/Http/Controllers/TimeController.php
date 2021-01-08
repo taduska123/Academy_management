@@ -30,26 +30,30 @@ class TimeController extends Controller
         $dayforfilter = null;
         foreach ($days as $day) {
             if ($dayforfilter != $day->days) {
-                $timesarray = null;
-                foreach ($days as $time) {
-                    if ($time->days == $day->days) {
-                        $timesarray[] = [
-                            'time_from' => $time->time_from,
-                            'time_to' => $time->time_to,
-                            'type_of_time' => $time->type_of_time
-                        ];
-                        $dayforfilter = $day->days;
-                    }
-                }
                 $daysarray[] = [
-                    'day' => $day->days, 'times' => [$timesarray]
+                    'day' => $day->days, 'times' => [$this->times($days, $day)]
                 ];
             }
         }
         $result = [
-            'months' => [$request->month => ['days' => $daysarray]]
+            'days' => $daysarray
         ];
         return response()->json($result, 200);
+    }
+
+    private function times($days, $day)
+    {
+        foreach ($days as $time) {
+            if ($time->days == $day->days) {
+                $timesarray[] = [
+                    'time_from' => $time->time_from,
+                    'time_to' => $time->time_to,
+                    'type_of_time' => $time->type_of_time
+                ];
+                $dayforfilter = $day->days;
+            }
+        }
+        return $timesarray;
     }
 
     /**
@@ -84,16 +88,18 @@ class TimeController extends Controller
             $time->time_to = $request->time_to;
             $time->time_from = $request->time_from;
             $time->save();
-            $trainee = Trainee::findorFail($trainee_id);
-            if (is_null($trainee->contract_start) && is_null($trainee->contract_end)) {
-                $trainee->contract_start = $request->contract_start;
-                $trainee->contract_end = $request->contract_end;
-            }
-            $trainee->save();
+            $this->set_contract_dates($trainee_id, $request);
             return response()->json($time, 201);
         } else {
             return response()->json(["message" => 'Times already exists!'], 409);
         }
+    }
+    public function set_contract_dates($trainee_id, Request $request)
+    {
+        $trainee = Trainee::findorFail($trainee_id);
+        $trainee->contract_start = $request->contract_start;
+        $trainee->contract_end = $request->contract_end;
+        $trainee->save();
     }
     /**
      * Update the specified resource in storage.
@@ -105,8 +111,6 @@ class TimeController extends Controller
     public function update(Request $request, $trainee_id, $time_id)
     {
         $request->validate([
-            'contract_start' => 'required',
-            'contract_end' => 'required',
             'intership_day' => 'required|date',
             'type_of_time' => 'required',
             'time_to' => 'required|date_format:H:i',
@@ -120,12 +124,7 @@ class TimeController extends Controller
         $time->time_to = $request->time_to;
         $time->time_from = $request->time_from;
         $time->save();
-        $trainee = Trainee::findorFail($request->trainee_id);
-        $trainee->contract_start = $request->contract_start;
-        $trainee->contract_end = $request->contract_end;
-        $trainee->save();
-        $trainee->update($request->all());
-        return response()->json($trainee, 200);
+        return response()->json($time, 200);
     }
 
     /**
