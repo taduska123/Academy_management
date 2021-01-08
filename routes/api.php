@@ -30,7 +30,7 @@ Route::middleware(['AuthKey'])->group(function () {
     Route::post('trainee/{trainee_id}/time', 'TimeController@store');
     Route::put('trainee/{trainee_id}/time/{time_id}', 'TimeController@update');
     Route::put('trainee/{trainee_id}/contracts', 'TimeController@set_contract_dates');
-    Route::delete('trainee/{trainee_id}/time/{time_id}', 'TimeController@delete');
+    Route::delete('time/{time_id}', 'TimeController@delete');
 });
 // Route::post('login', 'LoginController@authenticate');
 // Route::get('trainee', 'TraineeController@index')->middleware('AuthKey');

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Time;
 use App\Trainee;
 use Illuminate\Http\Request;
+use phpDocumentor\Reflection\Types\Boolean;
 
 class TimeController extends Controller
 {
@@ -75,12 +76,11 @@ class TimeController extends Controller
         ]);
         $times = Trainee::find($trainee_id)
             ->times()
+            ->select('time_to', 'time_from')
             ->whereDate('intership_day', $request->intership_day)
-            // ->where('type_of_time', $request->type_of_time)
-            ->whereTime('time_to', $request->time_to)
-            ->whereTime('time_from', $request->time_from)
             ->get();
-        if ($times->isEmpty()) {
+        if (!$this->check_if_times_overlap($times, $request->time_from, $request->time_to
+        || $times->isEmpty() )) {
             $time = new Time;
             $time->trainee_id = $trainee_id;
             $time->intership_day = $request->intership_day;
@@ -91,9 +91,30 @@ class TimeController extends Controller
             $this->set_contract_dates($trainee_id, $request);
             return response()->json($time, 201);
         } else {
-            return response()->json(["message" => 'Times already exists!'], 409);
+            return response()->json(["message" => 'Times overlap!'], 409);
         }
     }
+
+    private function check_if_times_overlap($times, $from_compare, $to_compare)
+    {
+        $from_compare = is_int($from_compare) ? $from_compare : strtotime($from_compare);
+        $to_compare = is_int($to_compare) ? $to_compare : strtotime($to_compare);
+        foreach ($times as $time)
+        {
+            // dd($time->time_from);
+            $from = strtotime($time->time_from);
+            $to = strtotime($time->time_to);
+            //dd($from, $from_compare, $to, $to_compare);
+            if (($from >= $from_compare && $from < $to_compare) ||
+            ($to > $from_compare && $to <= $to_compare)){
+                return true;
+            }
+            
+        }
+         return false;
+            
+    }
+
     public function set_contract_dates($trainee_id, Request $request)
     {
         $trainee = Trainee::findorFail($trainee_id);
@@ -135,7 +156,7 @@ class TimeController extends Controller
      */
     public function delete($time_id)
     {
-        Time::findeorFail($time_id)->delete();
+        Time::find($time_id)->delete();
         return response()->json(null, 204);
     }
 }
