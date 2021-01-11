@@ -14,9 +14,25 @@ class TimeController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index($id)
+    public function index($trainee_id)
     {
-        return response()->json(Trainee::findorFail($id)->times()->get(), 200);
+        //return response()->json(Trainee::findorFail($id)->times()->get(), 200);
+        $months = Trainee::findorFail($trainee_id)
+            ->times()
+            ->select(Time::raw("DATE_FORMAT(intership_day,'%m') as months") ,Time::raw("DATE_FORMAT(intership_day,'%d') as days"), 'intership_day', 'time_from', 'time_to', 'type_of_time')
+            ->orderBy('intership_day', 'asc')
+            ->get();
+            foreach ($months as $month) {
+                if (null != $month->months) {
+                    $monthsarray[] = [
+                        'month' => $month->months, 'days' => [$this->days($months)]
+                    ];
+                }
+            }
+            $result = [
+                'months' => $monthsarray
+            ];
+        return response()->json($result, 200);
     }
 
     public function bymonth($trainee_id, Request $request)
@@ -28,9 +44,13 @@ class TimeController extends Controller
             ->whereMonth('intership_day', $request->month)
             ->orderBy('intership_day', 'asc')
             ->get();
-        $dayforfilter = null;
+        
+        return response()->json($this->days($days), 200);
+    }
+    private function days($days)
+    {
         foreach ($days as $day) {
-            if ($dayforfilter != $day->days) {
+            if (null != $day->days) {
                 $daysarray[] = [
                     'day' => $day->days, 'times' => [$this->times($days, $day)]
                 ];
@@ -39,9 +59,8 @@ class TimeController extends Controller
         $result = [
             'days' => $daysarray
         ];
-        return response()->json($result, 200);
+        return $result;
     }
-
     private function times($days, $day)
     {
         foreach ($days as $time) {
@@ -51,7 +70,6 @@ class TimeController extends Controller
                     'time_to' => $time->time_to,
                     'type_of_time' => $time->type_of_time
                 ];
-                $dayforfilter = $day->days;
             }
         }
         return $timesarray;
