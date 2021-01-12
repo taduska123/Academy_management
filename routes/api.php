@@ -27,7 +27,7 @@ Route::middleware(['AuthKey'])->group(function () {
     Route::put('trainee/{trainee_id}', 'TraineeController@update');
     Route::delete('trainee/{trainee_id}', 'TraineeController@delete');
     Route::get('trainee/{trainee_id}/time', 'TimeController@index');
-    Route::get('trainee/{trainee_id}/timebyemonth', 'TimeController@bymonth');
+    Route::get('trainee/{trainee_id}/timebymonth', 'TimeController@bymonth');
     Route::post('trainee/{trainee_id}/time', 'TimeController@store');
     Route::put('trainee/{trainee_id}/time/{time_id}', 'TimeController@update');
     Route::put('trainee/{trainee_id}/contracts', 'TimeController@set_contract_dates');
