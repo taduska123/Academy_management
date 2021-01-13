@@ -84,7 +84,6 @@ class TimeController extends Controller
                 && $day->years == $year_check
                 && $dayforfilter != $day->days
             ) {
-
                 $dayarray[] = [
                     'day' => $day->days, 'times' => [$this->times_of_day($times, $day->days, $month_check, $year_check)]
                 ];
@@ -136,20 +135,31 @@ class TimeController extends Controller
             ->get();
         if (!$this->check_if_times_overlap($times, $request->time_from, $request->time_to
             || $times->isEmpty())) {
-            $time = new Time;
-            $time->trainee_id = $trainee_id;
-            $time->intership_day = $request->intership_day;
-            $time->type_of_time = $request->type_of_time;
-            $time->time_to = $request->time_to;
-            $time->time_from = $request->time_from;
-            $time->save();
-            $this->set_contract_dates($trainee_id, $request);
-            return response()->json($time, 201);
+            if ($this->check_if_times_is_in_5min_interval($request->time_from, $request->time_to)) {
+                $time = new Time;
+                $time->trainee_id = $trainee_id;
+                $time->intership_day = $request->intership_day;
+                $time->type_of_time = $request->type_of_time;
+                $time->time_to = $request->time_to;
+                $time->time_from = $request->time_from;
+                $time->save();
+                $this->set_contract_dates($trainee_id, $request);
+                return response()->json($time, 201);
+            } else {
+                return response()->json(["message" => 'Bad times intervals! Has to be 5min intervals'], 409);
+            }
         } else {
             return response()->json(["message" => 'Times overlap!'], 409);
         }
     }
-
+    private function check_if_times_is_in_5min_interval($from, $to)
+    {
+        if (empty(strtotime($from) % 300) && empty(strtotime($to) % 300)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
     private function check_if_times_overlap($times, $from_compare, $to_compare)
     {
         $from_compare = is_int($from_compare) ? $from_compare : strtotime($from_compare);
@@ -190,15 +200,28 @@ class TimeController extends Controller
             'time_to' => 'required|date_format:H:i',
             'time_from' => 'required|date_format:H:i'
         ]);
-
-        $time = Time::findeorFail($time_id);
-        $time->trainee_id = $trainee_id;
-        $time->intership_day = $request->intership_day;
-        $time->type_of_time = $request->type_of_time;
-        $time->time_to = $request->time_to;
-        $time->time_from = $request->time_from;
-        $time->save();
-        return response()->json($time, 200);
+        $times = Trainee::find($trainee_id)
+            ->times()
+            ->select('time_to', 'time_from')
+            ->whereDate('intership_day', $request->intership_day)
+            ->get();
+        if (!$this->check_if_times_overlap($times, $request->time_from, $request->time_to
+            || $times->isEmpty())) {
+            if ($this->check_if_times_is_in_5min_interval($request->time_from, $request->time_to)) {
+                $time = Time::findeorFail($time_id);
+                $time->trainee_id = $trainee_id;
+                $time->intership_day = $request->intership_day;
+                $time->type_of_time = $request->type_of_time;
+                $time->time_to = $request->time_to;
+                $time->time_from = $request->time_from;
+                $time->save();
+                return response()->json($time, 200);
+            } else {
+                return response()->json(["message" => 'Bad times intervals! Has to be 5min intervals'], 409);
+            }
+        } else {
+            return response()->json(["message" => 'Times overlap!'], 409);
+        }
     }
 
     /**
