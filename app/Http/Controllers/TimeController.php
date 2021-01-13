@@ -119,7 +119,6 @@ class TimeController extends Controller
      */
     public function store(Request $request, $trainee_id)
     {
-
         $request->validate([
             'contract_start' => 'required',
             'contract_end' => 'required',
@@ -133,8 +132,8 @@ class TimeController extends Controller
             ->select('time_to', 'time_from')
             ->whereDate('intership_day', $request->intership_day)
             ->get();
-        if (!$this->check_if_times_overlap($times, $request->time_from, $request->time_to
-            || $times->isEmpty())) {
+        if (!$this->check_if_times_overlap($times, $request->time_from, $request->time_to)
+            || $times->isEmpty()) {
             if ($this->check_if_times_is_in_5min_interval($request->time_from, $request->time_to)) {
                 $time = new Time;
                 $time->trainee_id = $trainee_id;
@@ -205,8 +204,8 @@ class TimeController extends Controller
             ->select('time_to', 'time_from')
             ->whereDate('intership_day', $request->intership_day)
             ->get();
-        if (!$this->check_if_times_overlap($times, $request->time_from, $request->time_to
-            || $times->isEmpty())) {
+        if ($this->check_if_times_overlap($times, $request->time_from, $request->time_to)
+            || $times->isEmpty()) {
             if ($this->check_if_times_is_in_5min_interval($request->time_from, $request->time_to)) {
                 $time = Time::findeorFail($time_id);
                 $time->trainee_id = $trainee_id;
