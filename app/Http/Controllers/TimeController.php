@@ -133,7 +133,7 @@ class TimeController extends Controller
             ->whereDate('intership_day', $request->intership_day)
             ->get();
         if (!$this->check_if_times_overlap($times, $request->time_from, $request->time_to)
-            || $times->isEmpty()) {
+            ) {
             if ($this->check_if_times_is_in_5min_interval($request->time_from, $request->time_to)) {
                 $time = new Time;
                 $time->trainee_id = $trainee_id;
@@ -163,11 +163,10 @@ class TimeController extends Controller
     {
         $from_compare = is_int($from_compare) ? $from_compare : strtotime($from_compare);
         $to_compare = is_int($to_compare) ? $to_compare : strtotime($to_compare);
+        if($from_compare >= $to_compare){ return true;}
         foreach ($times as $time) {
-            // dd($time->time_from);
             $from = strtotime($time->time_from);
             $to = strtotime($time->time_to);
-            //dd($from, $from_compare, $to, $to_compare);
             if (($from >= $from_compare && $from < $to_compare) ||
                 ($to > $from_compare && $to <= $to_compare)
             ) {
