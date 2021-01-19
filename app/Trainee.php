@@ -29,5 +29,10 @@ class Trainee extends Model
     {
        return $this->select('contract_start','contract_end');
     }
+    public function scopeByidtimes($query, $id)
+    {
+        return $query->findorFail($id)
+        ->times();
+    }
 }
 

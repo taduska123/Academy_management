@@ -15,44 +15,18 @@ class TimeController extends Controller
      */
     public function index($trainee_id)
     {
-        $times = Trainee::findorFail($trainee_id)
-            ->times()
-            ->select(
-                Time::raw("DATE_FORMAT(intership_day,'%m') as months"),
-                Time::raw("DATE_FORMAT(intership_day,'%Y') as years"),
-                Time::raw("DATE_FORMAT(intership_day,'%d') as days"),
-                'intership_day',
-                'time_from',
-                'time_to',
-                'type_of_time'
-            )
-            ->orderBy('intership_day', 'asc')
-            ->get();
-
-        return response()->json($this->months($times), 200);
+        return response()->json($this->months(Trainee::byidtimes($trainee_id)->alltimes()->get()), 200);
     }
 
     public function bymonth($trainee_id, Request $request)
     {
-        $times = Trainee::findorFail($trainee_id)
-            ->times()
-            ->select(
-                Time::raw("DATE_FORMAT(intership_day,'%m') as months"),
-                Time::raw("DATE_FORMAT(intership_day,'%Y') as years"),
-                Time::raw("DATE_FORMAT(intership_day,'%d') as days"),
-                'intership_day',
-                'time_from',
-                'time_to',
-                'type_of_time'
-            )
-            ->whereYear('intership_day', $request->year)
-            ->whereMonth('intership_day', $request->month)
-            ->orderBy('intership_day', 'asc')
-            ->get();
-        //die($this->days($days));
-        //die($times);
-        return response()->json($this->days_of_month($times, $request->month, $request->year), 200);
+        return response()->json($this->days_of_month(
+            Trainee::byidtimes($trainee_id)->bymonth($request->year, $request->month)->get(),
+            $request->month,
+            $request->year),
+        200);
     }
+
     private function months($times)
     {
         //die($times);
@@ -111,6 +85,31 @@ class TimeController extends Controller
         return $timesarray;
     }
 
+    private function check_if_times_is_in_5min_interval($from, $to)
+    {
+        if (empty(strtotime($from) % 300) && empty(strtotime($to) % 300)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    private function check_if_times_overlap($times, $from_compare, $to_compare)
+    {
+        $from_compare = is_int($from_compare) ? $from_compare : strtotime($from_compare);
+        $to_compare = is_int($to_compare) ? $to_compare : strtotime($to_compare);
+        if($from_compare >= $to_compare){ return true;}
+        foreach ($times as $time) {
+            $from = strtotime($time->time_from);
+            $to = strtotime($time->time_to);
+            if (($from >= $from_compare && $from < $to_compare) ||
+                ($to > $from_compare && $to <= $to_compare)
+            ) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * Store a newly created resource in storage.
      *
@@ -150,30 +149,6 @@ class TimeController extends Controller
         } else {
             return response()->json(["message" => 'Times overlap!'], 409);
         }
-    }
-    private function check_if_times_is_in_5min_interval($from, $to)
-    {
-        if (empty(strtotime($from) % 300) && empty(strtotime($to) % 300)) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-    private function check_if_times_overlap($times, $from_compare, $to_compare)
-    {
-        $from_compare = is_int($from_compare) ? $from_compare : strtotime($from_compare);
-        $to_compare = is_int($to_compare) ? $to_compare : strtotime($to_compare);
-        if($from_compare >= $to_compare){ return true;}
-        foreach ($times as $time) {
-            $from = strtotime($time->time_from);
-            $to = strtotime($time->time_to);
-            if (($from >= $from_compare && $from < $to_compare) ||
-                ($to > $from_compare && $to <= $to_compare)
-            ) {
-                return true;
-            }
-        }
-        return false;
     }
 
     public function set_contract_dates($trainee_id, Request $request)
