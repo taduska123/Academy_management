@@ -47,5 +47,92 @@ class Time extends Model
             ->whereMonth('intership_day', $month)
             ->orderBy('intership_day', 'asc');
     }
-    
+
+    public function scopeTotalhours($query)
+    {
+        return $query->select(Time::raw("SUM(HOUR(`time_to`) - HOUR(`time_from`)) as totalhours"));
+    }
+
+    public static function months($times, $totalhours)
+    {
+        $monthfilter = null;
+        $yearfilter = null;
+        $montharray = [];
+        $totaltime = ['totalhours'=>$totalhours->first(), 'times'=>[]];
+        foreach ($times as $month) {
+
+            if ($monthfilter != $month->months ||  $yearfilter != $month->years) {
+                $montharray[] = [
+                    'year' => $month->years,
+                    'month' => $month->months,
+                    'days' => [Time::days_of_month($times, $month->months, $month->years)]
+                ];
+                $monthfilter = $month->months;
+                $yearfilter = $month->years;
+            }
+        }
+        $totaltime['times'] = $montharray;
+        return $totaltime;
+    }
+    public static function days_of_month($times, $month_check, $year_check)
+    {
+
+        $dayarray = [];
+        $dayforfilter = null;
+        foreach ($times as $day) {
+            if (
+                $day->months == $month_check
+                && $day->years == $year_check
+                && $dayforfilter != $day->days
+            ) {
+                $dayarray[] = [
+                    'day' => $day->days, 'times' => [Time::times_of_day($times, $day->days, $month_check, $year_check)]
+                ];
+                $dayforfilter = $day->days;
+            }
+        }
+        return $dayarray;
+    }
+    public static function times_of_day($times, $day_check, $month_check, $year_check)
+    {
+        $timesarray = [];
+        foreach ($times as $time) {
+            if (
+                $time->days == $day_check
+                && $time->months == $month_check
+                && $time->years == $year_check
+            ) {
+                $timesarray[] = [
+                    'time_from' => $time->time_from,
+                    'time_to' => $time->time_to,
+                    'type_of_time' => $time->type_of_time
+                ];
+            }
+        }
+        return $timesarray;
+    }
+    public static function check_if_times_is_in_5min_interval($from, $to)
+    {
+        if (empty(strtotime($from) % 300) && empty(strtotime($to) % 300)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    public static function check_if_times_overlap($times, $from_compare, $to_compare)
+    {
+        $from_compare = is_int($from_compare) ? $from_compare : strtotime($from_compare);
+        $to_compare = is_int($to_compare) ? $to_compare : strtotime($to_compare);
+        if($from_compare >= $to_compare){ return true;}
+        foreach ($times as $time) {
+            $from = strtotime($time->time_from);
+            $to = strtotime($time->time_to);
+            if (($from >= $from_compare && $from < $to_compare) ||
+                ($to > $from_compare && $to <= $to_compare)
+            ) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

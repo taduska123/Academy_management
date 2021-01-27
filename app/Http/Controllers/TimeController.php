@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Time;
 use App\Trainee;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class TimeController extends Controller
 {
@@ -15,99 +16,30 @@ class TimeController extends Controller
      */
     public function index($trainee_id)
     {
-        return response()->json($this->months(Trainee::byidtimes($trainee_id)->alltimes()->get()), 200);
+        $times = Trainee::byidtimes($trainee_id)->alltimes()->get();
+        $totalhours = Trainee::byidtimes($trainee_id)->totalhours()->get();
+        //$times = $times->concat($totalhours);
+        //dd($times);
+        //$this->getRealQuery(Trainee::byidtimes($trainee_id)->alltimes(),true);
+        return response()->json(Time::months($times,$totalhours), 200);
     }
 
     public function bymonth($trainee_id, Request $request)
     {
-        return response()->json($this->days_of_month(
-            Trainee::byidtimes($trainee_id)->bymonth($request->year, $request->month)->get(),
-            $request->month,
-            $request->year),
-        200);
+        $times = Trainee::byidtimes($trainee_id)->bymonth($request->year, $request->month)->get();
+        return response()->json(Time::days_of_month($times, $request->month, $request->year), 200);
     }
 
-    private function months($times)
+    function getRealQuery($query, $dumpIt = false)
     {
-        //die($times);
-        $monthfilter = null;
-        $yearfilter = null;
-        $montharray = [];
-        foreach ($times as $month) {
-
-            if ($monthfilter != $month->months ||  $yearfilter != $month->years) {
-                $montharray[] = [
-                    'year' => $month->years,
-                    'month' => $month->months,
-                    'days' => [$this->days_of_month($times, $month->months, $month->years)]
-                ];
-                $monthfilter = $month->months;
-                $yearfilter = $month->years;
-            }
+        $params = array_map(function ($item) {
+            return "'{$item}'";
+        }, $query->getBindings());
+        $result = Str::replaceArray('\?', $params, $query->toSql());
+        if ($dumpIt) {
+            dd($result);
         }
-        return $montharray;
-    }
-    private function days_of_month($times, $month_check, $year_check)
-    {
-
-        $dayarray = [];
-        $dayforfilter = null;
-        foreach ($times as $day) {
-            if (
-                $day->months == $month_check
-                && $day->years == $year_check
-                && $dayforfilter != $day->days
-            ) {
-                $dayarray[] = [
-                    'day' => $day->days, 'times' => [$this->times_of_day($times, $day->days, $month_check, $year_check)]
-                ];
-                $dayforfilter = $day->days;
-            }
-        }
-        return $dayarray;
-    }
-    private function times_of_day($times, $day_check, $month_check, $year_check)
-    {
-        $timesarray = [];
-        foreach ($times as $time) {
-            if (
-                $time->days == $day_check
-                && $time->months == $month_check
-                && $time->years == $year_check
-            ) {
-                $timesarray[] = [
-                    'time_from' => $time->time_from,
-                    'time_to' => $time->time_to,
-                    'type_of_time' => $time->type_of_time
-                ];
-            }
-        }
-        return $timesarray;
-    }
-
-    private function check_if_times_is_in_5min_interval($from, $to)
-    {
-        if (empty(strtotime($from) % 300) && empty(strtotime($to) % 300)) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-    private function check_if_times_overlap($times, $from_compare, $to_compare)
-    {
-        $from_compare = is_int($from_compare) ? $from_compare : strtotime($from_compare);
-        $to_compare = is_int($to_compare) ? $to_compare : strtotime($to_compare);
-        if($from_compare >= $to_compare){ return true;}
-        foreach ($times as $time) {
-            $from = strtotime($time->time_from);
-            $to = strtotime($time->time_to);
-            if (($from >= $from_compare && $from < $to_compare) ||
-                ($to > $from_compare && $to <= $to_compare)
-            ) {
-                return true;
-            }
-        }
-        return false;
+        return $result;
     }
 
     /**
@@ -131,9 +63,9 @@ class TimeController extends Controller
             ->select('time_to', 'time_from')
             ->whereDate('intership_day', $request->intership_day)
             ->get();
-        if (!$this->check_if_times_overlap($times, $request->time_from, $request->time_to)
+        if (!Time::check_if_times_overlap($times, $request->time_from, $request->time_to)
             ) {
-            if ($this->check_if_times_is_in_5min_interval($request->time_from, $request->time_to)) {
+            if (Time::check_if_times_is_in_5min_interval($request->time_from, $request->time_to)) {
                 $time = new Time;
                 $time->trainee_id = $trainee_id;
                 $time->intership_day = $request->intership_day;
@@ -178,9 +110,9 @@ class TimeController extends Controller
             ->select('time_to', 'time_from')
             ->whereDate('intership_day', $request->intership_day)
             ->get();
-        if ($this->check_if_times_overlap($times, $request->time_from, $request->time_to)
+        if (Time::check_if_times_overlap($times, $request->time_from, $request->time_to)
             || $times->isEmpty()) {
-            if ($this->check_if_times_is_in_5min_interval($request->time_from, $request->time_to)) {
+            if (Time::check_if_times_is_in_5min_interval($request->time_from, $request->time_to)) {
                 $time = Time::findeorFail($time_id);
                 $time->trainee_id = $trainee_id;
                 $time->intership_day = $request->intership_day;
