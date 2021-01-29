@@ -19,8 +19,9 @@ class TimeController extends Controller
         $times = Trainee::byidtimes($trainee_id)->alltimes()->get();
         $totalhours = Trainee::byidtimes($trainee_id)->totalhours()->get();
         //$times = $times->concat($totalhours);
-        //dd($times);
-        //$this->getRealQuery(Trainee::byidtimes($trainee_id)->alltimes(),true);
+        //$test = Trainee::byidtimes($trainee_id)->timesfordocs()->get();
+        //die($test->toJson());
+        //$this->getRealQuery(Trainee::byidtimes($trainee_id)->timesfordocs(),true);
         return response()->json(Time::months($times,$totalhours), 200);
     }
 

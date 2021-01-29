@@ -14,6 +14,7 @@ class Time extends Model
     'time_to',
     'time_from'];
 
+
     public function trainee()
     {
         return $this->belongsTo(Trainee::class);
@@ -24,23 +25,45 @@ class Time extends Model
                 Time::raw("DATE_FORMAT(intership_day,'%m') as months"),
                 Time::raw("DATE_FORMAT(intership_day,'%Y') as years"),
                 Time::raw("DATE_FORMAT(intership_day,'%d') as days"),
+                Time::raw("TIME_FORMAT(time_from,'%H:%i') as time_from"),
+                Time::raw("TIME_FORMAT(time_to,'%H:%i') as time_to"),
                 'intership_day',
-                'time_from',
-                'time_to',
                 'type_of_time'
             )
+            ->orderBy('intership_day', 'asc')
+            ->orderBy('time_from', 'asc');
+    }
+    public function scopeTimesfordocs($query)
+    {
+        return  $query->select(
+            Time::raw("DATE_FORMAT(intership_day,'%Y') as years"),
+            Time::raw("DATE_FORMAT(`intership_day`, '%W') as weekdays"),
+            Time::raw("DATE_FORMAT(`intership_day`, '%v') as weeks"),
+            Time::raw("TIME_FORMAT(time_from,'%H:%i') as time_from"),
+            Time::raw("TIME_FORMAT(time_to,'%H:%i') as time_to"),
+            'intership_day',
+            'type_of_time'
+        )
+        ->orderBy('intership_day', 'asc')
+        ->orderBy('time_from', 'asc');
+    }
+    public function scopeWeeks($query)
+    {
+        return  $query->select(
+            Time::raw("DATE_FORMAT(intership_day,'%Y') as years"),
+            Time::raw("DATE_FORMAT(`intership_day`, '%v') AS weeks"),
+            Time::raw("DATE_FORMAT(`intership_day`, '%W') AS weekdays"))
             ->orderBy('intership_day', 'asc');
     }
-
     public function scopeBymonth($query, $year, $month)
     {
        return $query->select(
                 Time::raw("DATE_FORMAT(intership_day,'%m') as months"),
                 Time::raw("DATE_FORMAT(intership_day,'%Y') as years"),
                 Time::raw("DATE_FORMAT(intership_day,'%d') as days"),
+                Time::raw("TIME_FORMAT(time_from,'%H:%i') as time_from"),
+                Time::raw("TIME_FORMAT(time_to,'%H:%i') as time_to"),
                 'intership_day',
-                'time_from',
-                'time_to',
                 'type_of_time'
             )
             ->whereYear('intership_day', $year)
@@ -135,4 +158,65 @@ class Time extends Model
         }
         return false;
     }
+
+    function getStartAndEndDate($week, $year) {
+        $dto = new \DateTime();
+        $dto->setISODate($year, $week);
+        $ret['week_start'] = $dto->format('Y-m-d');
+        $dto->modify('+6 days');
+        $ret['week_end'] = $dto->format('Y-m-d');
+        return $ret;
+      }
+
+      public static function weeks($times)
+      {
+          $weektest = null;
+          $weeksarray = [];
+          foreach ($times as $week) {
+              if ($week->weeks != $weektest) {
+                  $weeksarray[] = [
+                      'week' => $week->weeks,
+                       'weekdays' => [Time::weekdays($times, $week->weeks)]
+                  ];
+                  $weektest = $week->weeks;
+              }
+          }
+          return $weeksarray;
+      }
+      public static function weekdays($times, $week)
+      {
+  
+          $weekdayarray = [];
+          $weekdayforfilter = null;
+          foreach ($times as $weekday) {
+              if (
+                  $weekday->weeks == $week
+                  && $weekdayforfilter != $weekday->weekdays
+              ) {
+                  $weekdayarray[] = [
+                      'weekday' => $weekday->weekdays,
+                      'ontimes' => Time::activehours($times, $weekday->weekdays, $week, 'practise'),
+                      'offtimes' => Time::activehours($times, $weekday->weekdays, $week, 'lecture')
+                  ];
+                  $weekdayforfilter = $weekday->weekdays;
+              }
+          }
+          return $weekdayarray;
+      }
+      public static function activehours($times, $weekday_check, $week_check, $type)
+      {
+          $period = "";
+          foreach ($times as $time) {
+              if (
+                  $time->weekdays == $weekday_check
+                  && $time->weeks == $week_check
+                  && $time->type_of_time == $type
+              ) {
+                  $period = $period." ".$time->time_from." - ".$time->time_to.";";
+                  ;
+              }
+          }
+          return $period;
+      }
+
 }

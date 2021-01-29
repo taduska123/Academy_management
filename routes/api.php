@@ -32,7 +32,9 @@ Route::middleware(['AuthKey'])->group(function () {
     Route::put('trainee/{trainee_id}/time/{time_id}', 'TimeController@update');
     Route::put('trainee/{trainee_id}/contracts', 'TimeController@set_contract_dates');
     Route::delete('time/{time_id}', 'TimeController@delete');
+    
 });
+Route::get('trainee/{trainee_id}/time/word', 'DocumentController@Word');
 // Route::post('login', 'LoginController@authenticate');
 // Route::get('trainee', 'TraineeController@index')->middleware('AuthKey');
 // Route::post('trainee', 'TraineeController@store')->middleware('AuthKey');

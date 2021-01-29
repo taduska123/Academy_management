@@ -1,29 +1,45 @@
-<p style="margin-top:0pt; margin-bottom:5pt; text-align:center; font-size:14pt;"><strong><span style="font-family:'Times New Roman';">************ PRAKTIKOS ATLIKIMO GRAFIKAS</span></strong></p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>INDIVIDUALUS PRAKTIKOS ATLIKIMO GRAFIKAS</title>
+</head>
+<body>
+    <p style="margin-top:0pt; margin-bottom:5pt; text-align:center; font-size:14pt;"><strong><span style="font-family:'Times New Roman';">INDIVIDUALIOS PRAKTIKOS ATLIKIMO GRAFIKAS</span></strong></p>
 <p style="margin-top:0pt; margin-bottom:0pt; font-size:10pt;"><span style="font-family:Arial;">&nbsp;</span></p>
-<p style="margin-top:0pt; margin-bottom:0pt; font-size:11pt;"><span style="font-family:'Times New Roman';">Tado Kasparavičiaus praktika atliekama nuo 2020-10-27 iki 2021-02-03, i&scaron; viso 316 val.</span></p>
+<p style="margin-top:0pt; margin-bottom:0pt; font-size:11pt;"><span style="font-family:'Times New Roman';">{{$trainee->name}} {{$trainee->last_name}} praktika atliekama nuo {{$trainee->contract_start}} iki {{$trainee->contract_end}}, i&scaron; viso {{$totalhours->first()}} val.</span></p>
 <p style="margin-top:0pt; margin-bottom:0pt; font-size:10pt;"><span style="font-family:Arial;">&nbsp;</span></p>
 <table cellpadding="0" cellspacing="0" style="width:520.7pt; border:0.75pt solid #000000; border-collapse:collapse;">
-    <tbody>
+    <thead>
         <tr>
-            <td style="width:71.55pt; border-right-style:solid; border-right-width:0.75pt; border-bottom-style:solid; border-bottom-width:0.75pt; padding-right:5.03pt; padding-left:5.03pt; vertical-align:middle;">
+            <th style="width:71.55pt; border-right-style:solid; border-right-width:0.75pt; border-bottom-style:solid; border-bottom-width:0.75pt; padding-right:5.03pt; padding-left:5.03pt; vertical-align:middle;">
                 <p style="margin-top:0pt; margin-bottom:0pt; font-size:11pt;"><span style="font-family:'Times New Roman';">Studijų savaite</span></p>
-            </td>
-            <td style="width:76.7pt; border-right-style:solid; border-right-width:0.75pt; border-left-style:solid; border-left-width:0.75pt; border-bottom-style:solid; border-bottom-width:0.75pt; padding-right:5.03pt; padding-left:5.03pt; vertical-align:middle;">
+            </th>
+            <th style="width:76.7pt; border-right-style:solid; border-right-width:0.75pt; border-left-style:solid; border-left-width:0.75pt; border-bottom-style:solid; border-bottom-width:0.75pt; padding-right:5.03pt; padding-left:5.03pt; vertical-align:middle;">
                 <p style="margin-top:0pt; margin-bottom:0pt; font-size:11pt;"><span style="font-family:'Times New Roman';">Savaitės diena</span></p>
-            </td>
-            <td style="width:164.15pt; border-right-style:solid; border-right-width:0.75pt; border-left-style:solid; border-left-width:0.75pt; border-bottom-style:solid; border-bottom-width:0.75pt; padding-right:5.03pt; padding-left:5.03pt; vertical-align:middle;">
+            </th>
+            <th style="width:164.15pt; border-right-style:solid; border-right-width:0.75pt; border-left-style:solid; border-left-width:0.75pt; border-bottom-style:solid; border-bottom-width:0.75pt; padding-right:5.03pt; padding-left:5.03pt; vertical-align:middle;">
                 <p style="margin-top:0pt; margin-bottom:0pt; text-align:center; font-size:11pt;"><span style="font-family:'Times New Roman';">Paskaitų laikas</span><span style="font-family:'Times New Roman';">&nbsp;&nbsp;</span><span style="font-family:'Times New Roman';">(nuo kelintos iki kelintos valandos vyksta)</span></p>
-            </td>
-            <td style="width:164.35pt; border-left-style:solid; border-left-width:0.75pt; border-bottom-style:solid; border-bottom-width:0.75pt; padding-right:5.03pt; padding-left:5.03pt; vertical-align:middle;">
+            </th>
+            <th style="width:164.35pt; border-left-style:solid; border-left-width:0.75pt; border-bottom-style:solid; border-bottom-width:0.75pt; padding-right:5.03pt; padding-left:5.03pt; vertical-align:middle;">
                 <p style="margin-top:0pt; margin-bottom:0pt; text-align:center; font-size:11pt;"><span style="font-family:'Times New Roman';">Praktikos atlikimo laikas</span><span style="font-family:'Times New Roman';">&nbsp;&nbsp;</span><span style="font-family:'Times New Roman';">(nuo kelintos iki kelintos valandos vyksta)</span></p>
-            </td>
+            </th>
         </tr>
+    </thead>
+        <tbody>
+            @foreach($weeks as $week)
         <tr>
             <td rowspan="5" style="width:71.55pt; border-top-style:solid; border-top-width:0.75pt; border-right-style:solid; border-right-width:0.75pt; border-bottom-style:solid; border-bottom-width:0.75pt; padding-right:5.03pt; padding-left:5.03pt; vertical-align:middle;">
-                <h2 style="margin-top:10pt; margin-bottom:6pt; page-break-after:avoid; font-size:11pt;"><span style="font-family:'Times New Roman';">2020 ** 26 &ndash; 2020 10 30</span></h2>
+                <h2 style="margin-top:10pt; margin-bottom:6pt; page-break-after:avoid; font-size:11pt;"><span style="font-family:'Times New Roman';">{{$week->weeks}}</span></h2>
             </td>
+            @foreach($ontimes as $ontime)
+            @break($ontime->week != $week->weeks)
+                if()
+            @endphp
             <td style="width:76.7pt; border-style:solid; border-width:0.75pt; padding-right:5.03pt; padding-left:5.03pt; vertical-align:top;">
-                <p style="margin-top:0pt; margin-bottom:0pt; font-size:11pt;"><span style="font-family:'Times New Roman';">Pirmadienis</span></p>
+                <p style="margin-top:0pt; margin-bottom:0pt; font-size:11pt;"><span style="font-family:'Times New Roman';">{{$time->weekday}}</span></p>
             </td>
             <td style="width:164.15pt; border-style:solid; border-width:0.75pt; padding-right:5.03pt; padding-left:5.03pt; vertical-align:top;">
                 <p style="margin-top:0pt; margin-bottom:0pt; text-align:center; font-size:11pt;"><span style="font-family:'Times New Roman';">11:00 &ndash; 12:30</span></p>
@@ -32,6 +48,7 @@
                 <p style="margin-top:0pt; margin-bottom:0pt; text-align:center; font-size:11pt;"><span style="font-family:'Times New Roman';">-</span></p>
             </td>
         </tr>
+        @endforeach
         <tr>
             <td style="width:76.7pt; border-style:solid; border-width:0.75pt; padding-right:5.03pt; padding-left:5.03pt; vertical-align:top;">
                 <p style="margin-top:0pt; margin-bottom:0pt; font-size:11pt;"><span style="font-family:'Times New Roman';">Antradienis</span></p>
@@ -206,3 +223,5 @@
         </tr>
     </tbody>
 </table>
+</body>
+</html>

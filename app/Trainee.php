@@ -34,5 +34,9 @@ class Trainee extends Model
         return $query->findorFail($id)
         ->times();
     }
+    public function scopeWholename($query)
+    {
+        return $query->select(Trainee::raw("CONCAT_WS(' ', `name`, `last_name`) AS `whole_name`"));
+    }
 }
 
