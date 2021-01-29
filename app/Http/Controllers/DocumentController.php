@@ -20,10 +20,6 @@ class DocumentController extends Controller
         $templateProcessor = new TemplateProcessor('word-template\user.docx');
         $fileName = Trainee::findorFail($trainee_id)->wholename()->get();
         $data = Time::weeks($times);
-        $values = [
-            ['userId' => 1, 'userName' => 'Batman', 'userAddress' => 'Gotham City'],
-            ['userId' => 2, 'userName' => 'Superman', 'userAddress' => 'Metropolis'],
-        ];
         //dd($data);
         $templateProcessor->cloneRowAndSetValues('week', $data);
         $templateProcessor->saveAs($fileName . '.docx');
