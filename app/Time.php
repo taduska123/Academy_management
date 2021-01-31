@@ -3,16 +3,18 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 class Time extends Model
 {
     protected $table = "times";
-    protected $fillable = [ 
-    'trainee_id',
-    'intership_day',
-    'type_of_day',
-    'time_to',
-    'time_from'];
+    protected $fillable = [
+        'trainee_id',
+        'intership_day',
+        'type_of_day',
+        'time_to',
+        'time_from'
+    ];
 
 
     public function trainee()
@@ -21,15 +23,15 @@ class Time extends Model
     }
     public function scopeAlltimes($query)
     {
-       return  $query->select(
-                Time::raw("DATE_FORMAT(intership_day,'%m') as months"),
-                Time::raw("DATE_FORMAT(intership_day,'%Y') as years"),
-                Time::raw("DATE_FORMAT(intership_day,'%d') as days"),
-                Time::raw("TIME_FORMAT(time_from,'%H:%i') as time_from"),
-                Time::raw("TIME_FORMAT(time_to,'%H:%i') as time_to"),
-                'intership_day',
-                'type_of_time'
-            )
+        return  $query->select(
+            Time::raw("DATE_FORMAT(intership_day,'%m') as months"),
+            Time::raw("DATE_FORMAT(intership_day,'%Y') as years"),
+            Time::raw("DATE_FORMAT(intership_day,'%d') as days"),
+            Time::raw("TIME_FORMAT(time_from,'%H:%i') as time_from"),
+            Time::raw("TIME_FORMAT(time_to,'%H:%i') as time_to"),
+            'intership_day',
+            'type_of_time'
+        )
             ->orderBy('intership_day', 'asc')
             ->orderBy('time_from', 'asc');
     }
@@ -38,50 +40,56 @@ class Time extends Model
         return  $query->select(
             Time::raw("DATE_FORMAT(intership_day,'%Y') as years"),
             Time::raw("DATE_FORMAT(`intership_day`, '%W') as weekdays"),
-            Time::raw("DATE_FORMAT(`intership_day`, '%v') as weeks"),
+            Time::raw("WEEK(`intership_day`, 5) as weeks"),
             Time::raw("TIME_FORMAT(time_from,'%H:%i') as time_from"),
             Time::raw("TIME_FORMAT(time_to,'%H:%i') as time_to"),
             'intership_day',
             'type_of_time'
         )
-        ->orderBy('intership_day', 'asc')
-        ->orderBy('time_from', 'asc');
+            ->orderBy('intership_day', 'asc')
+            ->orderBy('time_from', 'asc');
     }
     public function scopeWeeks($query)
     {
         return  $query->select(
             Time::raw("DATE_FORMAT(intership_day,'%Y') as years"),
-            Time::raw("DATE_FORMAT(`intership_day`, '%v') AS weeks"),
-            Time::raw("DATE_FORMAT(`intership_day`, '%W') AS weekdays"))
+            Time::raw("WEEK(`intership_day`, 5) AS weeks"),
+            Time::raw("DATE_FORMAT(`intership_day`, '%W') AS weekdays")
+        )
             ->orderBy('intership_day', 'asc');
     }
     public function scopeBymonth($query, $year, $month)
     {
-       return $query->select(
-                Time::raw("DATE_FORMAT(intership_day,'%m') as months"),
-                Time::raw("DATE_FORMAT(intership_day,'%Y') as years"),
-                Time::raw("DATE_FORMAT(intership_day,'%d') as days"),
-                Time::raw("TIME_FORMAT(time_from,'%H:%i') as time_from"),
-                Time::raw("TIME_FORMAT(time_to,'%H:%i') as time_to"),
-                'intership_day',
-                'type_of_time'
-            )
+        return $query->select(
+            Time::raw("DATE_FORMAT(intership_day,'%m') as months"),
+            Time::raw("DATE_FORMAT(intership_day,'%Y') as years"),
+            Time::raw("DATE_FORMAT(intership_day,'%d') as days"),
+            Time::raw("TIME_FORMAT(time_from,'%H:%i') as time_from"),
+            Time::raw("TIME_FORMAT(time_to,'%H:%i') as time_to"),
+            'intership_day',
+            'type_of_time'
+        )
             ->whereYear('intership_day', $year)
             ->whereMonth('intership_day', $month)
             ->orderBy('intership_day', 'asc');
     }
 
-    public function scopeTotalhours($query)
+    public function scopeTotalhours($query, $type)
     {
-        return $query->select(Time::raw("SUM(HOUR(`time_to`) - HOUR(`time_from`)) as totalhours"));
+        return $query->select(Time::raw("SUM(HOUR(`time_to`) - HOUR(`time_from`)) as totalhours"))
+            ->where('type_of_time', $type);
     }
 
+    public function scopeGroupbyweeks($query)
+    {
+        return $query->groupBy(Time::raw("WEEK(`intership_day`, 5)"));
+    }
     public static function months($times, $totalhours)
     {
         $monthfilter = null;
         $yearfilter = null;
         $montharray = [];
-        $totaltime = ['totalhours'=>$totalhours->first(), 'times'=>[]];
+        $totaltime = ['totalhours' => $totalhours->first(), 'times' => []];
         foreach ($times as $month) {
 
             if ($monthfilter != $month->months ||  $yearfilter != $month->years) {
@@ -146,7 +154,9 @@ class Time extends Model
     {
         $from_compare = is_int($from_compare) ? $from_compare : strtotime($from_compare);
         $to_compare = is_int($to_compare) ? $to_compare : strtotime($to_compare);
-        if($from_compare >= $to_compare){ return true;}
+        if ($from_compare >= $to_compare) {
+            return true;
+        }
         foreach ($times as $time) {
             $from = strtotime($time->time_from);
             $to = strtotime($time->time_to);
@@ -159,64 +169,91 @@ class Time extends Model
         return false;
     }
 
-    function getStartAndEndDate($week, $year) {
+    public static function getStartAndEndDate($week, $year)
+    {
         $dto = new \DateTime();
         $dto->setISODate($year, $week);
         $ret['week_start'] = $dto->format('Y-m-d');
         $dto->modify('+6 days');
         $ret['week_end'] = $dto->format('Y-m-d');
         return $ret;
-      }
+    }
 
-      public static function weeks($times)
-      {
-          $weektest = null;
-          $weeksarray = [];
-          foreach ($times as $week) {
-              if ($week->weeks != $weektest) {
-                  $weeksarray[] = [
-                      'week' => $week->weeks,
-                       'weekdays' => [Time::weekdays($times, $week->weeks)]
-                  ];
-                  $weektest = $week->weeks;
-              }
-          }
-          return $weeksarray;
-      }
-      public static function weekdays($times, $week)
-      {
-  
-          $weekdayarray = [];
-          $weekdayforfilter = null;
-          foreach ($times as $weekday) {
-              if (
-                  $weekday->weeks == $week
-                  && $weekdayforfilter != $weekday->weekdays
-              ) {
-                  $weekdayarray[] = [
-                      'weekday' => $weekday->weekdays,
-                      'ontimes' => Time::activehours($times, $weekday->weekdays, $week, 'practise'),
-                      'offtimes' => Time::activehours($times, $weekday->weekdays, $week, 'lecture')
-                  ];
-                  $weekdayforfilter = $weekday->weekdays;
-              }
-          }
-          return $weekdayarray;
-      }
-      public static function activehours($times, $weekday_check, $week_check, $type)
-      {
-          $period = "";
-          foreach ($times as $time) {
-              if (
-                  $time->weekdays == $weekday_check
-                  && $time->weeks == $week_check
-                  && $time->type_of_time == $type
-              ) {
-                  $period = $period." ".$time->time_from." - ".$time->time_to.";";
-                  ;
-              }
-          }
-          return $period;
-      }
+    public static function weeks($times,$weeksth)
+    {
+        $weektest = null;
+        $weeksarray = [];
+        foreach ($times as $week) {
+            
+            if ($week->weeks != $weektest) {
+                $weeksarray[] = [
+                    'week' => $week->weeks,
+                    'year' => $week->years,
+                    'thw' => $weeksth->firstWhere('weeks', $week->weeks)->totalhours
+                ];
+                $weektest = $week->weeks;
+            }
+        }
+        return $weeksarray;
+    }
+    public static function weekdays($times, $week)
+    {
 
+        $weekdayarray = [];
+        $weekdayforfilter = null;
+        foreach ($times as $weekday) {
+            if (
+                $weekday->weeks == $week
+                && $weekdayforfilter != $weekday->weekdays
+            ) {
+                $weekdayarray[] = [
+                    'weekday' => Time::sulietuvinimas_savaites_dienos($weekday->weekdays),
+                    'ontimes' => Time::activehours($times, $weekday->weekdays, $week, 'practise'),
+                    'offtimes' => Time::activehours($times, $weekday->weekdays, $week, 'lecture')
+                ];
+                $weekdayforfilter = $weekday->weekdays;
+            }
+        }
+        return $weekdayarray;
+    }
+    
+    public static function activehours($times, $weekday_check, $week_check, $type)
+    {
+        $period = "";
+        foreach ($times as $time) {
+            if (
+                $time->weekdays == $weekday_check
+                && $time->weeks == $week_check
+                && $time->type_of_time == $type
+            ) {
+                $period = $period . " " . $time->time_from . " - " . $time->time_to . ";";;
+            }
+        }
+        return $period;
+    }
+
+    public static function sulietuvinimas_savaites_dienos($weekday)
+    {
+        if ($weekday == 'Monday') {
+            return 'Pirmadienis';
+        }
+        if ($weekday == 'Tuesday') {
+            return 'Antradienis';
+        }
+        if ($weekday == 'Wednesday') {
+            return 'Trečiadienis';
+        }
+        if ($weekday == 'Thursday') {
+            return 'Ketvirtadienis';
+        }
+        if ($weekday == 'Friday') {
+            return 'Penktadienis';
+        }
+        if ($weekday == 'Saturday') {
+            return 'Šeštadienis';
+        }
+        if ($weekday == 'Sunday') {
+            return 'Sekmandienis';
+        }
+    }
 }

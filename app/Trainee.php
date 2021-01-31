@@ -25,18 +25,18 @@ class Trainee extends Model
     {
         return $this->hasMany(Time::class);
     }
-    public function contract()
+    public function scopeContract($query, $id)
     {
-       return $this->select('contract_start','contract_end');
+       return $query->select('contract_start','contract_end')->where('id', $id);
     }
     public function scopeByidtimes($query, $id)
     {
         return $query->findorFail($id)
         ->times();
     }
-    public function scopeWholename($query)
+    public function scopeWholename($query, $id)
     {
-        return $query->select(Trainee::raw("CONCAT_WS(' ', `name`, `last_name`) AS `whole_name`"));
+        return $query->select(Trainee::raw("CONCAT_WS(' ', name, last_name) AS `whole_name`"))->where('id', $id);
     }
 }
 

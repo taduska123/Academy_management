@@ -17,11 +17,7 @@ class TimeController extends Controller
     public function index($trainee_id)
     {
         $times = Trainee::byidtimes($trainee_id)->alltimes()->get();
-        $totalhours = Trainee::byidtimes($trainee_id)->totalhours()->get();
-        //$times = $times->concat($totalhours);
-        //$test = Trainee::byidtimes($trainee_id)->timesfordocs()->get();
-        //die($test->toJson());
-        //$this->getRealQuery(Trainee::byidtimes($trainee_id)->timesfordocs(),true);
+        $totalhours = Trainee::byidtimes($trainee_id)->totalhours('practise')->get();
         return response()->json(Time::months($times,$totalhours), 200);
     }
 
@@ -31,17 +27,17 @@ class TimeController extends Controller
         return response()->json(Time::days_of_month($times, $request->month, $request->year), 200);
     }
 
-    function getRealQuery($query, $dumpIt = false)
-    {
-        $params = array_map(function ($item) {
-            return "'{$item}'";
-        }, $query->getBindings());
-        $result = Str::replaceArray('\?', $params, $query->toSql());
-        if ($dumpIt) {
-            dd($result);
-        }
-        return $result;
-    }
+    // function getRealQuery($query, $dumpIt = false)
+    // {
+    //     $params = array_map(function ($item) {
+    //         return "'{$item}'";
+    //     }, $query->getBindings());
+    //     $result = Str::replaceArray('\?', $params, $query->toSql());
+    //     if ($dumpIt) {
+    //         dd($result);
+    //     }
+    //     return $result;
+    // }
 
     /**
      * Store a newly created resource in storage.
