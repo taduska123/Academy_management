@@ -69,4 +69,5 @@ PUT api/trainee/{trainee_id}/time/{time_id}
 PUT api/trainee/{trainee_id}/contracts
 ## Delete Trainee specific time
 DELETE api/time/{time_id}
- 
+## Get Trainee schedule to word format
+GET trainee/{trainee_id}/time/word
